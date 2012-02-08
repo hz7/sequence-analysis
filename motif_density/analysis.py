@@ -6,7 +6,7 @@ calculates the motif densities for all 3 reading frames in each gene of the sequ
 
 Usage: analysis SEQUENCE INPUT_FILE OUTPUT_FILE
 
-e.x. analysis MOTIF_INP orf_coding.fasta results.csv
+e.x. analysis STP orf_coding.fasta results.csv
 '''
 
 import numpy, sys

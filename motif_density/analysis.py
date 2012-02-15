@@ -7,6 +7,10 @@ calculates the motif densities for all 3 reading frames in each gene of the sequ
 Usage: analysis INPUT_FILE OUTPUT_FILE MOTIFS...
 
 e.x. analysis orf_coding.fasta results.csv SP TP
+
+or if importing from another module/ calling from the interpreter:
+MotifAnalyzer(orf_coding.fasta, results.csv, ['SP, 'TP'], 'csv')
+MotifAnalyzer(orf_coding.fasta, results.h5, ['SP, 'TP'], 'hdf5')
 '''
 
 import h5py, numpy, sys
@@ -43,15 +47,12 @@ class MotifAnalyzer:
         densities = []
 
         for aaSeq in aaSequences:
-            aaMotifPos = []
-
-            # Find motif locations
+            # Mark motif locations with 1, else 0
+            signal = numpy.zeros(len(aaSeq))
             for pos, seq in self.motif_inp.search_instances(aaSeq):
-                aaMotifPos.append(pos)
+                signal[pos] = 1.0
 
             # calculate moving average using convolution
-            signal = numpy.zeros(len(aaSeq))
-            signal[aaMotifPos] = 1.0
             densities.append(numpy.convolve(signal, self.KERNEL, mode='valid'))
 
         self.writer(record.id, densities)
@@ -60,7 +61,7 @@ class MotifAnalyzer:
         '''Calculates motif densities.
         File inputPath contains FASTA DNA sequences.
         The density used will be for for all motifs listed in motifInput.
-        Results are written to outputPath using mode='csv' or mode='hdf5'
+        Results are written to outputPath using outputMode = 'csv' or 'hdf5'
         '''
         self.motif_inp = Motif.Motif(alphabet=self.AA_ALPHA)
         for motif in motifInput:
@@ -85,7 +86,7 @@ def main():
     inputPath = sys.argv[1]
     outputPath = sys.argv[2]
     motifInput = sys.argv[3:]
-    MotifAnalyzer(inputPath, outputPath, motifInput, 'hdf5')
+    MotifAnalyzer(inputPath, outputPath, motifInput, 'csv')
 
 if __name__ == '__main__':
     main()

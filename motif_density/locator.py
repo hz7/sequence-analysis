@@ -1,61 +1,58 @@
 #!/usr/bin/env python3
 
 '''
-This script, given a motif and an input FASTA sequence file,
-calculates the motif densities for all 3 reading frames in each gene of the sequence file.
+This script, given motifs and an input FASTA sequence file,
+finds the positions of the motifs in the 3 frames.
 
-Usage: analysis INPUT_FILE OUTPUT_FILE MOTIFS...
+Usage: locator INPUT_FILE OUTPUT_FILE OUTPUT_MODE MOTIFS...
 
-e.x. analysis orf_coding.fasta results.csv SP TP
+e.x. locator orf_coding.fasta results.csv csv SP TP
 
 or if importing from another module/ calling from the interpreter:
-MotifAnalyzer(orf_coding.fasta, results.csv, ['SP, 'TP'], 'csv')
-MotifAnalyzer(orf_coding.fasta, results.h5, ['SP, 'TP'], 'hdf5')
+Locator(orf_coding.fasta, results.csv, ['SP, 'TP'], 'csv')
+Locator(orf_coding.fasta, results.h5, ['SP, 'TP'], 'hdf5')
 '''
 
 import h5py, numpy, sys
 from Bio import SeqIO, Motif, Seq, Alphabet
 
-class MotifAnalyzer:
+class Locator:
 
     # Global Settings:
-    WINDOW_SIZE = 25
     DNA_ALPHA = Alphabet.IUPAC.unambiguous_dna
     AA_ALPHA = Alphabet.IUPAC.protein
-    KERNEL = numpy.ones(WINDOW_SIZE) / WINDOW_SIZE
     INPUT_FORMAT = 'fasta'
 
-    def writeCsv(self, gene, densities):
+    def writeCsv(self, gene, all_locs):
         '''Write output as csv'''
-        self.out_handle.write(bytes(gene + '\n', 'UTF-8'))
-        for array in densities:
-            numpy.savetxt(self.out_handle, numpy.reshape(array, (1, len(array))),
-                                fmt='%5.5f', delimiter=',')
+        self.out_handle.write(gene)
+        self.out_handle.write('\n')
+        for loc in all_locs:
+            self.out_handle.write(','.join(str(num) for num in loc))
+            self.out_handle.write('\n')
 
-    def writeHdf5(self, gene, densities):
+    def writeHdf5(self, gene, all_locs):
         '''Write output as hdf5'''
         i = 0
         group = self.out_handle.create_group('/{0}'.format(gene))
-        for array in densities:
-            group[str(i)] = numpy.reshape(array, (1, len(array)))
+        for locs in all_locs:
+            group[str(i)] = numpy.array(locs, dtype=numpy.int32)
             i += 1
 
     def analyze_record(self, record):
         '''Does density calculations and writing of output for a given DNA sequence in record.'''
         sequences = [Seq.Seq(str(record.seq)[i:], self.DNA_ALPHA) for i in range(3)]
         aaSequences = [seq.translate() for seq in sequences]
-        densities = []
 
+        all_locs = []
         for aaSeq in aaSequences:
-            # Mark motif locations with 1, else 0
-            signal = numpy.zeros(len(aaSeq))
+            # Encoded as length, position1, position2, ...
+            locations = [len(aaSeq)]
             for pos, seq in self.motif_inp.search_instances(aaSeq):
-                signal[pos] = 1.0
+                locations.append(pos)
+            all_locs.append(locations)
 
-            # calculate moving average using convolution
-            densities.append(numpy.convolve(signal, self.KERNEL, mode='valid'))
-
-        self.writer(record.id, densities)
+        self.writer(record.id, all_locs)
 
     def __init__(self, inputPath, outputPath, motifInput, outputMode):
         '''Calculates motif densities.
@@ -69,7 +66,7 @@ class MotifAnalyzer:
 
         if outputMode == 'csv':
             self.writer = self.writeCsv
-            self.out_handle = open(outputPath, 'wb')
+            self.out_handle = open(outputPath, 'w')
         elif outputMode == 'hdf5':
             self.writer = self.writeHdf5
             self.out_handle = h5py.File(outputPath, 'w')
@@ -85,8 +82,9 @@ class MotifAnalyzer:
 def main():
     inputPath = sys.argv[1]
     outputPath = sys.argv[2]
-    motifInput = sys.argv[3:]
-    MotifAnalyzer(inputPath, outputPath, motifInput, 'csv')
+    mode = sys.argv[3]
+    motifInput = sys.argv[4:]
+    Locator(inputPath, outputPath, motifInput, mode)
 
 if __name__ == '__main__':
     main()

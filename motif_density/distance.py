@@ -25,9 +25,9 @@ def min_dist(v1, v2):
     if x < y in v2 and r < s in v1, if d(x, s) is minimal, r < x <= s
     and d(r, y) < d(s, y)
     '''
-    result = []
+    score_table = []
     if (len(v1) == 0):
-        return result
+        return score_table
     i = 0 #index of current candidate for closest element
     for x in v2:
         d1 = float("inf") #current distance
@@ -40,11 +40,11 @@ def min_dist(v1, v2):
             else:
                 break
         i -= 1 #backtrack
-        result.append(d1)
-    return result
+        score_table.append(d1)
+    return score_table
 
 def get_dists(all_locs):
-    diff1 = (x2 - x1 for x1,x2 in zip(all_locs[0], all_locs[0][1:]))
+    diff1 = [x2 - x1 for x1,x2 in zip(all_locs[0], all_locs[0][1:])]
     diff2 = min_dist(all_locs[0], all_locs[1])
     diff3 = min_dist(all_locs[0], all_locs[2])
     return [diff1, diff2, diff3]

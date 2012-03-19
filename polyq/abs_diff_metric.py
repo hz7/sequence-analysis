@@ -11,9 +11,13 @@ Where N/A is a missing value - here you just skip that position and go to the ne
 import numpy, pandas
 from pandas import DataFrame
 
-df = pandas.read_csv('c:/holt/polyq/data/out_pandas.csv', index_col=0)
+#Input is a csv file, where header row is gene, species1, species2, ...
+INPUT = 'c:/holt/polyq/data/out_pandas.csv'
+OUTPUT = 'c:/holt/polyq/data/out_pandas_diffmetric.csv'
+
+df = pandas.read_csv(INPUT, index_col=0)
 
 result = DataFrame({'abs_diff' : [numpy.sum(numpy.abs(numpy.diff(row.dropna().values)))
                     for rowIndex, row in df.iterrows()]}, index=df.index)
 
-result.to_csv('c:/holt/polyq/data/out_pandas_diffmetric.csv')
+result.to_csv(OUTPUT)

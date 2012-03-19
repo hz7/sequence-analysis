@@ -9,17 +9,17 @@ Usage: density INPUT_FILE OUTPUT_FILE MOTIFS...
 e.x. density orf_coding.fasta results.csv SP TP
 
 or if importing from another module/ calling from the interpreter:
-DensityAnalyzer(orf_coding.fasta, results.csv, ['SP, 'TP'], 'csv')
-DensityAnalyzer(orf_coding.fasta, results.h5, ['SP, 'TP'], 'hdf5')
+ClusterScorer(orf_coding.fasta, results.csv, ['SP, 'TP'], 'csv')
+ClusterScorer(orf_coding.fasta, results.h5, ['SP, 'TP'], 'hdf5')
 '''
 
 import h5py, numpy, sys
 from Bio import SeqIO, Motif, Seq, Alphabet
 
-class DensityAnalyzer:
+class ClusterScorer:
 
     # Global Settings:
-    WINDOW_SIZE = 25
+    WINDOW_SIZE = 50
     DNA_ALPHA = Alphabet.IUPAC.unambiguous_dna
     AA_ALPHA = Alphabet.IUPAC.protein
     KERNEL = numpy.ones(WINDOW_SIZE) / WINDOW_SIZE
@@ -85,8 +85,9 @@ class DensityAnalyzer:
 def main():
     inputPath = sys.argv[1]
     outputPath = sys.argv[2]
-    motifInput = sys.argv[3:]
-    DensityAnalyzer(inputPath, outputPath, motifInput, 'csv')
+    mode = sys.argv[3]
+    motifInput = sys.argv[4:]
+    ClusterScorer(inputPath, outputPath, motifInput, mode)
 
 if __name__ == '__main__':
     main()

@@ -1,7 +1,5 @@
 '''
-Created on Feb 24, 2012
-
-@author: user
+Plot of gene's densities with top max density
 '''
 import h5py, numpy
 import matplotlib.pyplot as plt
@@ -22,4 +20,3 @@ for pair in top:
     plt.title(key)
     plt.legend(('shift 0', 'shift 1', 'shift 2'))
     plt.savefig('density_' + key + '.png', format='png')
-    

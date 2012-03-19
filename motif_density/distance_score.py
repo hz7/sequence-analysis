@@ -1,5 +1,6 @@
 '''
-pick some genes where min. distance is interesting -- whatever that means
+Pick some genes where min. distance is interesting -- whatever that means
+using the score function.
 '''
 
 import h5py, numpy
@@ -10,9 +11,9 @@ def score(distances):
     else:
         nDist = numpy.size(distances)
         min5 = numpy.sort(distances)[:min(5, nDist)]
-        return numpy.average(min5) + max(5 - nDist, 0)
+        return numpy.average(min5) + max(9 - nDist, 0)
 
-f = h5py.File('distance_results.h5', 'r')
+f = h5py.File('data/distance_results.h5', 'r')
 
 score_table = {}
 
